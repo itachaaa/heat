@@ -55,11 +55,11 @@ class PluginManager(object):
                                         packages())
             return itertools.chain.from_iterable(pkg_modules)    # from_iterable 把序列等转换成一个迭代器
 
-        self.modules = list(modules())    # 返回key 型的迭代器，list 转化为列表 -- 列出资源所在的各个模块
+        self.modules = list(modules())    # 返回key 型的迭代器，list 转化为列表 -- 列出资源所在的各个模块[module]
 
     def map_to_modules(self, function):
         """Iterate over the results of calling a function on every module."""
-        return six.moves.map(function, self.modules)
+        return six.moves.map(function, self.modules)   # [{}, {}, {}]
 
 
 class PluginMapping(object):
@@ -94,7 +94,7 @@ class PluginMapping(object):
             if callable(mapping_func):    # 是一个函数
                 fmt_data = {'mapping_name': mapping_name, 'module': module}
                 try:
-                    mapping_dict = mapping_func(*self.args, **self.kwargs)
+                    mapping_dict = mapping_func(*self.args, **self.kwargs)    # 返回resource_mapping 返回的字典{key：value}
                 except Exception:
                     LOG.error('Failed to load %(mapping_name)s '
                               'from %(module)s', fmt_data)
@@ -113,9 +113,16 @@ class PluginMapping(object):
 
         Mappings are returned as a list of (key, value) tuples.
         """
-        mod_dicts = plugin_manager.map_to_modules(self.load_from_module)
+        mod_dicts = plugin_manager.map_to_modules(self.load_from_module)    # mod_dicts ---- [{}, {}, {}]
         # mod_dicts 就是 load_from_module 返回的列表 key-value
         return itertools.chain.from_iterable(six.iteritems(d) for d
                                              in mod_dicts)
-        # iteritems(d) 相当于 dict 里的 items，但是返回的是迭代器
-        # from_iterable(iterable) 这个函数里面传入
+        # iteritems(d) 相当于 dict 里的 items， return a list of (key, value) tuples
+        # d ---- {}
+        # six.iteritems(d) ---- [(key, value)]
+        # (six.iteritems(d) for d in mod_dicts) ————
+        # ((key, value), (key, value), (key, value)) ————
+        # 列表推导式 [] 换成 () -- 生成器
+
+        # 所以 return 的 from_iterable(six.iteritems(d) for d in mod_dicts) 就是 ((key, value), (key, value), (key, value))
+        # 这里的 key value 就是 resource_mapping 返回的字典

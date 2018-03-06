@@ -87,6 +87,7 @@ def _load_global_resources(env):
         _get_mapping('heat.event_sinks'))    # 事件接收
 
     manager = plugin_manager.PluginManager(__name__)    # __name__ = __main__, 被调用时 = __init__
+    # TODO: 遗留问题，此处为何传参是 __name__?
     # Sometimes resources should not be available for registration in Heat due
     # to unsatisfied dependencies. We look first for the function
     # 'available_resource_mapping', which should return the filtered resources.
